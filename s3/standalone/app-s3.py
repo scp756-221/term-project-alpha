@@ -19,7 +19,7 @@ from flask import request
 import unique_code
 
 # The path to the file (CSV format) containing the sample data
-DB_PATH = '/data/music.csv'
+DB_PATH = '/data/playlists.csv'
 
 # The unique exercise code
 # The EXER environment variable has a value specific to this exercise
@@ -138,7 +138,7 @@ def shutdown():
     return {}
 
 
-app.register_blueprint(bp, url_prefix='/api/v1/music/')
+app.register_blueprint(bp, url_prefix='/api/v1/playlists/')
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
