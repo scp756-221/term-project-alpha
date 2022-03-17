@@ -10,7 +10,7 @@ COPY app-${ASSIGN}.py app.py
 COPY unique_code.py .
 
 VOLUME /data
-EXPOSE 30001
+EXPOSE 30008
 
 # Used to generate unique hash code for "test" operation
 # This two-step approach is required by Dockerfile syntax:
@@ -19,4 +19,4 @@ EXPOSE 30001
 ARG EXERARG=v0.75
 ENV EXER=${EXERARG}
 
-CMD ["python", "app.py", "30001"]
+CMD ["python", "app.py", "30008"]
