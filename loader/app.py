@@ -47,6 +47,8 @@ def create_user(lname, fname, email, uuid):
               "email": email,
               "fname": fname,
               "uuid": uuid})
+    print("The json response is:")
+    print(response)
     return (response.json())
 
 
@@ -66,6 +68,22 @@ def create_song(artist, title, uuid):
               "uuid": uuid})
     return (response.json())
 
+def create_playlist(artist, title, uuid):
+    """
+    Create a song.
+    If a record already exists with the same artist and title,
+    the old UUID is replaced with this one.
+    """
+    url = db['name'] + '/load'
+    response = requests.post(
+        url,
+        auth=build_auth(),
+        json={"objtype": "playlist",
+              "Playlist Name": artist,
+              "Songs": title,
+              "uuid": uuid})
+    return (response.json())    
+
 
 def check_resp(resp, key):
     if 'http_status_code' in resp:
@@ -80,10 +98,11 @@ if __name__ == '__main__':
 
     resource_dir = '/data'
 
-    with open('{}/users/users.csv'.format(resource_dir), 'r') as inp:
+    with open('{}/users/users.csv'.format(resource_dir), 'r', encoding = 'utf-8') as inp:
         rdr = csv.reader(inp)
         next(rdr)  # Skip header
         for fn, ln, email, uuid in rdr:
+            print(fn, ln, email, uuid)
             resp = create_user(fn.strip(),
                                ln.strip(),
                                email.strip(),
@@ -107,3 +126,16 @@ if __name__ == '__main__':
                 print('Error creating song {} {}, {}'.format(artist,
                                                              title,
                                                              uuid))
+
+    with open('{}/playlist/playlists.csv'.format(resource_dir), 'r') as inp:
+        rdr = csv.reader(inp)
+        next(rdr)  # Skip header
+        for uuid, playlist_name, songs in rdr:
+            resp = create_playlist(playlist_name.strip(),
+                               songs.strip(),
+                               uuid.strip())
+            resp = check_resp(resp, 'playlist_id')
+            if resp is None or resp != uuid:
+                print('Error creating song {} {}, {}'.format(playlist_name,
+                                                             songs,
+                                                             uuid))            
