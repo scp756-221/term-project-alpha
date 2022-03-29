@@ -71,7 +71,22 @@ def get_song_details(music_id, headers):
 
 @bp.route('/<playlist_id>', methods=['GET'])
 def get_playlist_details(playlist_id):
-    pass
+    headers = request.headers
+    # check header here
+    # if 'Authorization' not in headers:
+    #     return Response(json.dumps({"error": "missing auth"}),
+    #                     status=401,
+    #                     mimetype='application/json')
+    payload = {"objtype": "playlist", "objkey": playlist_id}
+    url = db['name'] + '/' + db['endpoint'][0]
+    response = requests.get(
+        url,
+        params=payload,
+        headers={'Authorization': headers['Authorization']})
+    response_json = response.json()
+    #TODO
+    #add handling if response isnt found
+    return (response_json)
 
 @bp.route('/', methods=['POST'])
 def create_playlist():
