@@ -31,11 +31,13 @@ db = {
 }
 
 success_messages = {
-    "create_playlist" : "Playlist Created"
+    "create_playlist" : "Playlist Created",
+    "delete_playlist" : "Playlist Deleted"
 }
 
 error_messages = {
-    "create_payload_error" : "Request body is not correct. Keys needed: Playlist Name, Song IDs."
+    "create_payload_error" : "Request body is not correct. Keys needed: Playlist Name, Song IDs.",
+    "db_delete_error" : "Exception while deleting the playlist. Please reach out to the developers."
 }
 
 bp = Blueprint('app', __name__)
@@ -119,8 +121,21 @@ def remove_song_from_playlist():
 
 @bp.route('/<playlist_id>', methods=['DELETE'])
 def delete_playlist(playlist_id):
-    pass
-
+    headers = request.headers
+    # check header here
+    # if 'Authorization' not in headers:
+    #     return Response(json.dumps({"error": "missing auth"}),
+    #                     status=401,
+    #                     mimetype='application/json')
+    url = db['name'] + '/' + db['endpoint'][2]
+    try:
+        response = requests.delete(url,params={"objtype": "playlist", "objkey": playlist_id},
+                                    headers={'Authorization': headers['Authorization']})
+        return Response(json.dumps({"Message" : success_messages['delete_playlist']}), 
+                                    status=200, mimetype='application/json')
+    except Exception:
+        return Response(json.dumps({"Message": error_messages['db_delete_error']}),
+                                    status=500, mimetype='application/json')
 
 # All database calls will have this prefix.  Prometheus metric
 # calls will not---they will have route '/metrics'.  This is
