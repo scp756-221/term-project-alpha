@@ -32,16 +32,19 @@ db = {
 
 success_messages = {
     "create_playlist" : "Playlist Created",
-    "add_song" : "Song added successfully"
+    "add_song" : "Song added successfully",
+    "remove_song" : "Song removed successfully"
 }
 
 error_messages = {
     "create_payload_error" : "Request body is not correct. Keys needed: Playlist Name, Song IDs.",
     "add_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Add.",
+    "remove_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Remove.",
     "no_or_multiple_palylist_records_error" : "No / Multiple records found for the Playlist ID. Please verify it is correct.",
     "general_processing_error" : "Exception occured while processing your request. Please reach out to the developers.",
     "db_save_error" : "Exception occured while saving the data to the database. Please reach out to the developers.",
-    "missing_song_record_error" : "No record found in Music table for the song ID: {}"
+    "missing_song_record_error" : "No record found in Music table for the song ID: {}",
+    "song_not_in_playlist_error" : "Playlist does not have the song ID: {}. Unable to process the request"
 }
 
 bp = Blueprint('app', __name__)
@@ -190,7 +193,51 @@ def add_song_to_playlist():
 
 @bp.route('/remove/', methods=['POST'])
 def remove_song_from_playlist():
-    pass
+    headers = request.headers
+    # check header here
+    # if 'Authorization' not in headers:
+    #     return Response(json.dumps({"error": "missing auth"}),
+    #                     status=401,
+    #                     mimetype='application/json')
+    try:
+        content = request.get_json()
+        playlist_id = content['Playlist ID']
+        songs_to_remove = content['Songs IDs To Remove']
+    except Exception:
+        return Response(json.dumps({"Message": error_messages['remove_song_payload_error']}),
+                                    status=400, mimetype='application/json')
+
+    #get existing details of the playlist
+    response_items = {}
+    try:
+        playlist_details = get_playlist_details(playlist_id)
+        if playlist_details['Count'] != 1:
+            return Response(json.dumps({"Message": error_messages['no_or_multiple_palylist_records_error']}),
+                                        status=400, mimetype='application/json')
+        else:
+            response_items = playlist_details['Items']
+            for song in songs_to_remove:
+                if song in response_items[0]['Songs']:
+                    response_items[0]['Songs'].remove(song)
+                else:
+                    return Response(json.dumps({"Message": error_messages['song_not_in_playlist_error'].format(song)}),
+                                    status=400, mimetype='application/json')
+    except Exception:
+        return Response(json.dumps({"Message": error_messages['general_processing_error']}),
+                                    status=500, mimetype='application/json')
+    # save to DB
+    url = db['name'] + '/' + db['endpoint'][3]
+    request_body = {"objtype": "playlist", "objkey": playlist_id }
+    try:
+        response = requests.put(url, params=request_body, json={"Songs": response_items[0]['Songs']},
+                                headers={'Authorization': headers['Authorization']})
+        updated_playlist_details = get_playlist_details(playlist_id)['Items'][0]
+        return Response(json.dumps({"Message": success_messages['remove_song'], "Updated Playlist": updated_playlist_details}),
+                                    status=200, mimetype='application/json')
+    except Exception:
+        return Response(json.dumps({"Message": error_messages['db_save_error']}),
+                                    status=500, mimetype='application/json')
+
 
 @bp.route('/<playlist_id>', methods=['DELETE'])
 def delete_playlist(playlist_id):
