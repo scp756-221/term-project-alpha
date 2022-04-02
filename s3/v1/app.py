@@ -1,6 +1,5 @@
 # Standard library modules
 import logging
-import os
 import sys
 
 # Installed packages
@@ -31,25 +30,26 @@ db = {
 }
 
 success_messages = {
-    "create_playlist" : "Playlist Created",
-    "add_song" : "Song added successfully",
-    "remove_song" : "Song removed successfully",
-    "delete_playlist" : "Playlist Deleted"
+    "create_playlist": "Playlist Created",
+    "add_song": "Song added successfully",
+    "remove_song": "Song removed successfully",
+    "delete_playlist": "Playlist Deleted"
 }
 
 error_messages = {
-    "create_payload_error" : "Request body is not correct. Keys needed: Playlist Name, Song IDs.",
-    "add_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Add.",
-    "remove_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Remove.",
-    "no_or_multiple_playlist_records_error" : "No / Multiple records found for the Playlist ID. Please verify it is correct.",
-    "general_processing_error" : "Exception occured while processing your request. Please reach out to the developers.",
-    "db_save_error" : "Exception occured while saving the data to the database. Please reach out to the developers.",
-    "db_delete_error" : "Exception while deleting the playlist. Please reach out to the developers.",
-    "missing_song_record_error" : "No record found in Music table for the song ID: {}",
-    "song_not_in_playlist_error" : "Playlist does not have the song ID: {}. Unable to process the request"
+    "create_payload_error": "Request body is not correct. Keys needed: Playlist Name, Song IDs.",
+    "add_song_payload_error": "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Add.",
+    "remove_song_payload_error": "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Remove.",
+    "no_or_multiple_playlist_records_error": "No / Multiple records found for the Playlist ID. Please verify it is correct.",
+    "general_processing_error": "Exception occured while processing your request. Please reach out to the developers.",
+    "db_save_error": "Exception occured while saving the data to the database. Please reach out to the developers.",
+    "db_delete_error": "Exception while deleting the playlist. Please reach out to the developers.",
+    "missing_song_record_error": "No record found in Music table for the song ID: {}",
+    "song_not_in_playlist_error": "Playlist does not have the song ID: {}. Unable to process the request"
 }
 
 bp = Blueprint('app', __name__)
+
 
 @bp.route('/health')
 @metrics.do_not_track()
@@ -66,7 +66,6 @@ def readiness():
 @bp.route('/', methods=['GET'])
 @metrics.do_not_track()
 def list_all():
-    headers = request.headers
     return "API is working. Please access the required URL"
 
 
@@ -84,10 +83,10 @@ def get_song_details(music_id, headers):
 def get_playlist_details(playlist_id):
     headers = request.headers
     # check header here
-    # if 'Authorization' not in headers:
-    #     return Response(json.dumps({"error": "missing auth"}),
-    #                     status=401,
-    #                     mimetype='application/json')
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
     payload = {"objtype": "playlist", "objkey": playlist_id}
     url = db['name'] + '/' + db['endpoint'][0]
     response = requests.get(
@@ -95,18 +94,19 @@ def get_playlist_details(playlist_id):
         params=payload,
         headers={'Authorization': headers['Authorization']})
     response_json = response.json()
-    #TODO
-    #add handling if response isnt found
+    # TODO
+    # add handling if response isnt found
     return (response_json)
+
 
 @bp.route('/', methods=['POST'])
 def create_playlist():
     headers = request.headers
     # check header here
-    # if 'Authorization' not in headers:
-    #     return Response(json.dumps({"error": "missing auth"}),
-    #                     status=401,
-    #                     mimetype='application/json')
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
     try:
         content = request.get_json()
         playlist_name = content['Playlist Name']
@@ -115,7 +115,7 @@ def create_playlist():
         return Response(json.dumps({"Message": error_messages['create_payload_error']}),
                         status=400, mimetype='application/json')
 
-    #check the songs are exitisng in the DB 
+    # check the songs are exitisng in the DB
     for song in songs:
         music_api_reponse = get_song_details(song, headers)
         # make sure there is an existing record for the music/song
@@ -125,23 +125,24 @@ def create_playlist():
         else:
             return Response(json.dumps({"Message": error_messages['missing_song_record_error'].format(song)}),
                         status=400, mimetype='application/json')
-    #save to DB
+    # save to DB
     url = db['name'] + '/' + db['endpoint'][1]
-    request_body = {"objtype": "playlist", 
-                    "Playlist Name": playlist_name, 
+    request_body = {"objtype": "playlist",
+                    "Playlist Name": playlist_name,
                     "Songs": songs}
     response = requests.post(url, json=request_body, headers={'Authorization': headers['Authorization']})
-    return Response(json.dumps({"Message" : success_messages['create_playlist'], "Playlist Details": response.json()}), 
+    return Response(json.dumps({"Message": success_messages['create_playlist'], "Playlist Details": response.json()}),
                     status=200, mimetype='application/json')
+
 
 @bp.route('/add/', methods=['POST'])
 def add_song_to_playlist():
     headers = request.headers
     # check header here
-    # if 'Authorization' not in headers:
-    #     return Response(json.dumps({"error": "missing auth"}),
-    #                     status=401,
-    #                     mimetype='application/json')
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
     try:
         content = request.get_json()
         playlist_id = content['Playlist ID']
@@ -150,7 +151,7 @@ def add_song_to_playlist():
         return Response(json.dumps({"Message": error_messages['add_song_payload_error']}),
                         status=400, mimetype='application/json')
 
-    #get existing details of the playlist
+    # get existing details of the playlist
     response_items = {}
     try:
         playlist_details = get_playlist_details(playlist_id)
@@ -191,16 +192,15 @@ def add_song_to_playlist():
         return Response(json.dumps({"Message": error_messages['db_save_error']}),
                                     status=500, mimetype='application/json')
 
-        
 
 @bp.route('/remove/', methods=['POST'])
 def remove_song_from_playlist():
     headers = request.headers
     # check header here
-    # if 'Authorization' not in headers:
-    #     return Response(json.dumps({"error": "missing auth"}),
-    #                     status=401,
-    #                     mimetype='application/json')
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
     try:
         content = request.get_json()
         playlist_id = content['Playlist ID']
@@ -209,7 +209,7 @@ def remove_song_from_playlist():
         return Response(json.dumps({"Message": error_messages['remove_song_payload_error']}),
                                     status=400, mimetype='application/json')
 
-    #get existing details of the playlist
+    # get existing details of the playlist
     response_items = {}
     try:
         playlist_details = get_playlist_details(playlist_id)
@@ -229,7 +229,7 @@ def remove_song_from_playlist():
                                     status=500, mimetype='application/json')
     # save to DB
     url = db['name'] + '/' + db['endpoint'][3]
-    request_body = {"objtype": "playlist", "objkey": playlist_id }
+    request_body = {"objtype": "playlist", "objkey": playlist_id}
     try:
         response = requests.put(url, params=request_body, json={"Songs": response_items[0]['Songs']},
                                 headers={'Authorization': headers['Authorization']})
@@ -245,15 +245,15 @@ def remove_song_from_playlist():
 def delete_playlist(playlist_id):
     headers = request.headers
     # check header here
-    # if 'Authorization' not in headers:
-    #     return Response(json.dumps({"error": "missing auth"}),
-    #                     status=401,
-    #                     mimetype='application/json')
+    if 'Authorization' not in headers:
+        return Response(json.dumps({"error": "missing auth"}),
+                        status=401,
+                        mimetype='application/json')
     url = db['name'] + '/' + db['endpoint'][2]
     try:
-        response = requests.delete(url,params={"objtype": "playlist", "objkey": playlist_id},
+        response = requests.delete(url, params={"objtype": "playlist", "objkey": playlist_id},
                                     headers={'Authorization': headers['Authorization']})
-        return Response(json.dumps({"Message" : success_messages['delete_playlist']}), 
+        return Response(json.dumps({"Message": success_messages['delete_playlist']}),
                                     status=200, mimetype='application/json')
     except Exception:
         return Response(json.dumps({"Message": error_messages['db_delete_error']}),
@@ -263,7 +263,9 @@ def delete_playlist(playlist_id):
 # calls will not---they will have route '/metrics'.  This is
 # the conventional organization.
 
+
 app.register_blueprint(bp, url_prefix='/api/v1/playlists/')
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
