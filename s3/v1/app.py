@@ -33,7 +33,8 @@ db = {
 success_messages = {
     "create_playlist" : "Playlist Created",
     "add_song" : "Song added successfully",
-    "remove_song" : "Song removed successfully"
+    "remove_song" : "Song removed successfully",
+    "delete_playlist" : "Playlist Deleted"
 }
 
 error_messages = {
@@ -43,6 +44,7 @@ error_messages = {
     "no_or_multiple_palylist_records_error" : "No / Multiple records found for the Playlist ID. Please verify it is correct.",
     "general_processing_error" : "Exception occured while processing your request. Please reach out to the developers.",
     "db_save_error" : "Exception occured while saving the data to the database. Please reach out to the developers.",
+    "db_delete_error" : "Exception while deleting the playlist. Please reach out to the developers.",
     "missing_song_record_error" : "No record found in Music table for the song ID: {}",
     "song_not_in_playlist_error" : "Playlist does not have the song ID: {}. Unable to process the request"
 }
@@ -241,8 +243,21 @@ def remove_song_from_playlist():
 
 @bp.route('/<playlist_id>', methods=['DELETE'])
 def delete_playlist(playlist_id):
-    pass
-
+    headers = request.headers
+    # check header here
+    # if 'Authorization' not in headers:
+    #     return Response(json.dumps({"error": "missing auth"}),
+    #                     status=401,
+    #                     mimetype='application/json')
+    url = db['name'] + '/' + db['endpoint'][2]
+    try:
+        response = requests.delete(url,params={"objtype": "playlist", "objkey": playlist_id},
+                                    headers={'Authorization': headers['Authorization']})
+        return Response(json.dumps({"Message" : success_messages['delete_playlist']}), 
+                                    status=200, mimetype='application/json')
+    except Exception:
+        return Response(json.dumps({"Message": error_messages['db_delete_error']}),
+                                    status=500, mimetype='application/json')
 
 # All database calls will have this prefix.  Prometheus metric
 # calls will not---they will have route '/metrics'.  This is
