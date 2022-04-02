@@ -41,7 +41,7 @@ error_messages = {
     "create_payload_error" : "Request body is not correct. Keys needed: Playlist Name, Song IDs.",
     "add_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Add.",
     "remove_song_payload_error" : "Request body is not correct. Keys needed: Playlist ID, Songs IDs To Remove.",
-    "no_or_multiple_palylist_records_error" : "No / Multiple records found for the Playlist ID. Please verify it is correct.",
+    "no_or_multiple_playlist_records_error" : "No / Multiple records found for the Playlist ID. Please verify it is correct.",
     "general_processing_error" : "Exception occured while processing your request. Please reach out to the developers.",
     "db_save_error" : "Exception occured while saving the data to the database. Please reach out to the developers.",
     "db_delete_error" : "Exception while deleting the playlist. Please reach out to the developers.",
@@ -155,7 +155,7 @@ def add_song_to_playlist():
     try:
         playlist_details = get_playlist_details(playlist_id)
         if playlist_details['Count'] != 1:
-            return Response(json.dumps({"Message": error_messages['no_or_multiple_palylist_records_error']}),
+            return Response(json.dumps({"Message": error_messages['no_or_multiple_playlist_records_error']}),
                                         status=400, mimetype='application/json')
         else:
             response_items = playlist_details['Items']
@@ -214,7 +214,7 @@ def remove_song_from_playlist():
     try:
         playlist_details = get_playlist_details(playlist_id)
         if playlist_details['Count'] != 1:
-            return Response(json.dumps({"Message": error_messages['no_or_multiple_palylist_records_error']}),
+            return Response(json.dumps({"Message": error_messages['no_or_multiple_playlist_records_error']}),
                                         status=400, mimetype='application/json')
         else:
             response_items = playlist_details['Items']
