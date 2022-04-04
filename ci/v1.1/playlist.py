@@ -52,108 +52,36 @@ class Playlist():
             headers={'Authorization': self._auth}
         )
 
-    def add_song(self, playlist_id):
-        return ""
-    # def write_orig_artist(self, m_id, orig_artist):
-    #     """Write the original artist performing a song.
-
-    #     Parameters
-    #     ----------
-    #     m_id: string
-    #         The UUID of this song in the music database.
-
-    #     orig_artist: string
-    #         The original artist performing the song.
-
-    #     Returns
-    #     -------
-    #     number
-    #         The HTTP status code returned by the music service.
-    #     """
-    #     r = requests.put(
-    #         self._url + 'write_orig_artist/' + m_id,
-    #         json={'OrigArtist': orig_artist},
-    #         headers={'Authorization': self._auth}
-    #     )
-    #     return r.status_code
-
-    # def read(self, m_id):
-    #     """Read an artist, song pair.
-
-    #     Parameters
-    #     ----------
-    #     m_id: string
-    #         The UUID of this song in the music database.
-
-    #     Returns
-    #     -------
-    #     status, artist, title, orig_artist
-
-    #     status: number
-    #         The HTTP status code returned by Music.
-    #     artist: If status is 200, the artist performing the song.
-    #       If status is not 200, None.
-    #     title: If status is 200, the title of the song.
-    #       If status is not 200, None.
-    #     orig_artist: If status is 200 and the song has an
-    #       original artist field, the artist's name.
-    #       If the status is not 200 or there is no original artist
-    #       field, None.
-    #     """
-    #     r = requests.get(
-    #         self._url + m_id,
-    #         headers={'Authorization': self._auth}
-    #         )
-    #     if r.status_code != 200:
-    #         return r.status_code, None, None, None
-
-    #     item = r.json()['Items'][0]
-    #     OrigArtist = (item['OrigArtist'] if 'OrigArtist' in item
-    #                   else None)
-    #     return r.status_code, item['Artist'], item['SongTitle'], OrigArtist
-
-    # def read_orig_artist(self, m_id):
-    #     """Read the orginal artist of a song.
-
-    #     Parameters
-    #     ----------
-    #     m_id: string
-    #         The UUID of this song in the music database.
-
-    #     Returns
-    #     -------
-    #     status, orig_artist
-
-    #     status: number
-    #         The HTTP status code returned by Music.
-    #     orig_artist:
-    #       If status is 200, the original artist who
-    #         performed the song.
-    #       If status is not 200, None.
-    #     """
-    #     r = requests.get(
-    #         self._url + 'read_orig_artist/' + m_id,
-    #         headers={'Authorization': self._auth}
-    #         )
-    #     if r.status_code != 200:
-    #         return r.status_code, None
-    #     item = r.json()
-    #     return r.status_code, item['OrigArtist']
-
-    def delete(self, playlist_id):
-        """Delete an artist, song pair.
-
-        Parameters
-        ----------
-        m_id: string
-            The UUID of this song in the music database.
-
-        Returns
-        -------
-        Does not return anything. The music delete operation
-        always returns 200, HTTP success.
-        """
-        requests.delete(
-            self._url + playlist_id,
+    def add_song_to_playlist(self, playlist_id, songs_to_add):
+        payload = {'Playlist ID': playlist_id,
+                   'Songs IDs To Add': songs_to_add}
+        r = requests.post(
+            self._url + 'add/',
+            json=payload,
             headers={'Authorization': self._auth}
         )
+        return r.status_code, r.json()
+
+    def remove_song_from_playlist(self, playlist_id, songs_to_remove):
+        payload = {'Playlist ID': playlist_id,
+                   'Songs IDs To Remove': songs_to_remove}
+        r = requests.post(
+            self._url + 'remove/',
+            json=payload,
+            headers={'Authorization': self._auth}
+        )
+        return r.status_code, r.json()
+
+    def remove_song_from_playlist_error(self, playlist_id, songs_to_remove):
+        """
+        the remove end point requires the JSON payload to have
+        a key 'Songs IDs To Remove' which will not be sent and
+        the api should result in an error with HTTP 400 error
+        """
+        payload = {'Playlist ID': playlist_id}
+        r = requests.post(
+            self._url + 'remove/',
+            json=payload,
+            headers={'Authorization': self._auth}
+        )
+        return r.status_code, r.json()
