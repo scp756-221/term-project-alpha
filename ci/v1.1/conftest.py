@@ -114,7 +114,7 @@ def music_url(request, music_address, music_port):
 
 @pytest.fixture
 def playlist_url(request, playlist_address, playlist_port):
-    return "http://{}:{}/api/v1/playlist/".format(
+    return "http://{}:{}/api/v1/playlists/".format(
         playlist_address, playlist_port)
 
 
