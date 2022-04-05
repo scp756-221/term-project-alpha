@@ -155,7 +155,7 @@ def create_playlist():
                     status=200, mimetype='application/json')
 
 
-@bp.route('/add/', methods=['POST'])
+@bp.route('/add/', methods=['PUT'])
 def add_song_to_playlist():
     headers = request.headers
     # check header here
@@ -226,7 +226,7 @@ def add_song_to_playlist():
             status=500, mimetype='application/json')
 
 
-@bp.route('/remove/', methods=['POST'])
+@bp.route('/remove/', methods=['PUT'])
 def remove_song_from_playlist():
     headers = request.headers
     # check header here
@@ -312,7 +312,7 @@ def delete_playlist(playlist_id):
 
 # All database calls will have this prefix.  Prometheus metric
 # calls will not---they will have route '/metrics'.  This is
-# the conventional organization.
+# the conventional organization
 
 
 app.register_blueprint(bp, url_prefix='/api/v1/playlists/')
