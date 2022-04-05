@@ -3,6 +3,7 @@ name: CI test of v1.1 music
 on:
   push:
     paths:
+      - /*
       - db/*
       - s1/*
       - s2/v1.1/*
