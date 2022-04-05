@@ -6,6 +6,7 @@ on:
       - db/*
       - s1/*
       - s2/v1/*
+      - s3/v1/*
       - ci/v1/*
       - .github/workflows/ci-system-v1.yaml
 
