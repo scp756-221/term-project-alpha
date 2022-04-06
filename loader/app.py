@@ -79,9 +79,11 @@ def create_playlist(playlist_name, music_ids, uuid):
         url,
         auth=build_auth(),
         json={"objtype": "playlist",
-              "Playlist Name": playlist_name,
-              "Music IDs": music_ids,
+              "Playlist_Name": playlist_name,
+              "Music_IDs": music_ids,
               "uuid": uuid})
+    print("The json response of playlist is :")
+    print(response)
     return (response.json())    
 
 
@@ -131,9 +133,12 @@ if __name__ == '__main__':
         rdr = csv.reader(inp)
         next(rdr)  # Skip header
         for uuid, playlist_name, music_ids in rdr:
+            print("I am here hello !")
             resp = create_playlist(playlist_name.strip(),
                                music_ids.strip(),
                                uuid.strip())
+            print('the created response is ')
+            print(resp)
             resp = check_resp(resp, 'playlist_id')
             if resp is None or resp != uuid:
                 print('Error creating playlist {} {}, {}'.format(playlist_name,

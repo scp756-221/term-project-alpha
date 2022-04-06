@@ -31,19 +31,19 @@ db = {
 
 success_messages = {
     "create_playlist": "Playlist Created",
-    "add_song": "Song added successfully",
-    "remove_song": "Song removed successfully",
+    "add_music": "Music added successfully",
+    "remove_music": "Music removed successfully",
     "delete_playlist": "Playlist Deleted"
 }
 
 error_messages = {
     "create_payload_error": "Request body is not correct."
-                            " Keys needed: Playlist Name, Song IDs.",
-    "add_song_payload_error": "Request body is not correct."
-                              " Keys needed: Playlist ID, Songs IDs To Add.",
-    "remove_song_payload_error": "Request body is not"
+                            " Keys needed: Playlist Name, Music IDs.",
+    "add_music_payload_error": "Request body is not correct."
+                              " Keys needed: Playlist ID, Music IDs To Add.",
+    "remove_music_payload_error": "Request body is not"
                                  " correct. Keys needed: Playlist ID,"
-                                 " Songs IDs To Remove.",
+                                 " Music IDs To Remove.",
     "no_or_multiple_playlist_records_error": "No / Multiple records found for "
                                              "the Playlist ID."
                                              " Please verify it is correct.",
@@ -54,9 +54,9 @@ error_messages = {
                      " Please reach out to the developers.",
     "db_delete_error": "Exception while deleting the playlist."
                        " Please reach out to the developers.",
-    "missing_song_record_error": "No record found in Music"
-                                 " table for the song ID: {}",
-    "song_not_in_playlist_error": "Playlist does not have the song ID: {}."
+    "missing_music_record_error": "No record found in Music"
+                                 " table for the Music ID: {}",
+    "music_not_in_playlist_error": "Playlist does not have the Music ID: {}."
                                   " Unable to process the request"
 }
 
@@ -66,7 +66,7 @@ bp = Blueprint('app', __name__)
 @bp.route('/health')
 @metrics.do_not_track()
 def health():
-    return Response("", status=200, mimetype="application/json")
+    return Response("API health check is completed.", status=200, mimetype="application/json")
 
 
 @bp.route('/readiness')
@@ -81,7 +81,7 @@ def list_all():
     return "API is working. Please access the required URL"
 
 
-def get_song_details(music_id, headers):
+def get_music_details(music_id, headers):
     payload = {"objtype": "music", "objkey": music_id}
     url = db['name'] + '/' + db['endpoint'][0]
     response = requests.get(
@@ -122,29 +122,29 @@ def create_playlist():
     try:
         content = request.get_json()
         playlist_name = content['Playlist Name']
-        songs = content['Song IDs']
+        music_ids = content['Music IDs']
     except Exception:
         return Response(json.dumps(
             {"Message": error_messages['create_payload_error']}),
             status=400, mimetype='application/json')
 
-    # check the songs are existing in the DB
-    for song in songs:
-        music_api_response = get_song_details(song, headers)
-        # make sure there is an existing record for the music/song
+    # check the music ids are existing in the DB
+    for music in music_ids:
+        music_api_response = get_music_details(music, headers)
+        # make sure there is an existing record for the music
         # to be added
         if music_api_response['Count'] == 1:
             continue
         else:
             return Response(json.dumps(
-                {"Message": error_messages['missing_song_record_error'].
-                    format(song)}),
+                {"Message": error_messages['missing_music_record_error'].
+                    format(music)}),
                 status=400, mimetype='application/json')
     # save to DB
     url = db['name'] + '/' + db['endpoint'][1]
     request_body = {"objtype": "playlist",
-                    "Playlist Name": playlist_name,
-                    "Songs": songs}
+                    "Playlist_Name": playlist_name,
+                    "Music_IDs": music_ids}
     response = requests.post(url,
                              json=request_body,
                              headers={
@@ -156,7 +156,7 @@ def create_playlist():
 
 
 @bp.route('/add/', methods=['PUT'])
-def add_song_to_playlist():
+def add_music_to_playlist():
     headers = request.headers
     # check header here
     if 'Authorization' not in headers:
@@ -166,10 +166,10 @@ def add_song_to_playlist():
     try:
         content = request.get_json()
         playlist_id = content['Playlist ID']
-        new_songs_to_add = content['Songs IDs To Add']
+        new_music_to_add = content['Music IDs To Add']
     except Exception:
         return Response(json.dumps({
-            "Message": error_messages['add_song_payload_error']}),
+            "Message": error_messages['add_music_payload_error']}),
             status=400, mimetype='application/json')
 
     # get existing details of the playlist
@@ -183,18 +183,18 @@ def add_song_to_playlist():
                 status=400, mimetype='application/json')
         else:
             response_items = playlist_details['Items']
-            for song in new_songs_to_add:
-                music_api_response = get_song_details(song, headers)
-                # make sure there is an existing record for the music/song
+            for music in new_music_to_add:
+                music_api_response = get_music_details(music, headers)
+                # make sure there is an existing record for the music
                 # to be added
                 if music_api_response['Count'] == 1:
                     continue
                 else:
                     return Response(json.dumps({
                         "Message":
-                        error_messages['missing_song_record'].format(song)}),
+                        error_messages['missing_music_record_error'].format(music)}),
                         status=400, mimetype='application/json')
-            response_items[0]['Songs'].extend(new_songs_to_add)
+            response_items[0]['Music_IDs'].extend(new_music_to_add)
     except Exception:
         return Response(json.dumps({
             "Message": error_messages['general_processing_error']}),
@@ -204,12 +204,12 @@ def add_song_to_playlist():
     request_body = {"objtype": "playlist",
                     "objkey": playlist_id,
                     }
+    # logging.warn(response_items[0])
     try:
-        _ = requests.put(
-            url,
+        _ = requests.put(url,
             params=request_body,
             json={
-                "Songs": list(set(response_items[0]['Songs']))
+                "Music_IDs": list(set(response_items[0]['Music_IDs']))
             },
             headers={
                 'Authorization': headers['Authorization']
@@ -217,17 +217,18 @@ def add_song_to_playlist():
         updated_playlist_details = \
             get_playlist_details(playlist_id)['Items'][0]
         return Response(json.dumps({
-            "Message": success_messages['add_song'],
+            "Message": success_messages['add_music'],
             "Updated Playlist": updated_playlist_details}),
             status=200, mimetype='application/json')
     except Exception:
+        logging.error(Exception)
         return Response(json.dumps({
             "Message": error_messages['db_save_error']}),
             status=500, mimetype='application/json')
 
 
 @bp.route('/remove/', methods=['PUT'])
-def remove_song_from_playlist():
+def remove_music_from_playlist():
     headers = request.headers
     # check header here
     if 'Authorization' not in headers:
@@ -237,10 +238,10 @@ def remove_song_from_playlist():
     try:
         content = request.get_json()
         playlist_id = content['Playlist ID']
-        songs_to_remove = content['Songs IDs To Remove']
+        music_to_remove = content['Music IDs To Remove']
     except Exception:
         return Response(json.dumps({
-            "Message": error_messages['remove_song_payload_error']
+            "Message": error_messages['remove_music_payload_error']
         }),
             status=400, mimetype='application/json')
 
@@ -255,14 +256,14 @@ def remove_song_from_playlist():
                 status=400, mimetype='application/json')
         else:
             response_items = playlist_details['Items']
-            for song in songs_to_remove:
-                if song in response_items[0]['Songs']:
-                    response_items[0]['Songs'].remove(song)
+            for music in music_to_remove:
+                if music in response_items[0]['Music_IDs']:
+                    response_items[0]['Music_IDs'].remove(music)
                 else:
                     return Response(json.dumps({
                         "Message":
                             error_messages
-                            ['song_not_in_playlist_error'].format(song)}),
+                            ['music_not_in_playlist_error'].format(music)}),
                         status=400, mimetype='application/json')
     except Exception:
         return Response(json.dumps({
@@ -273,13 +274,13 @@ def remove_song_from_playlist():
     request_body = {"objtype": "playlist", "objkey": playlist_id}
     try:
         _ = requests.put(url, params=request_body, json={
-            "Songs": response_items[0]['Songs']},
+            "Music_IDs": response_items[0]['Music_IDs']},
                          headers={'Authorization': headers['Authorization']})
         updated_playlist_details = \
             get_playlist_details(playlist_id)['Items'][0]
         return Response(
             json.dumps({
-                "Message": success_messages['remove_song'],
+                "Message": success_messages['remove_music'],
                 "Updated Playlist": updated_playlist_details}),
             status=200, mimetype='application/json')
     except Exception:
