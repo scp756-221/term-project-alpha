@@ -1,55 +1,51 @@
-[![Open in Visual Studio Code](https://classroom.github.com/assets/open-in-vscode-f059dc9a6f8d3a56e377f745f24479a46679e63a5d9fe6f495e02850cd0d8118.svg)](https://classroom.github.com/online_ide?assignment_repo_id=6723358&assignment_repo_type=AssignmentRepo)
-# SFU CMPT 756 main project directory
 
-This is the course repo for CMPT 756 (Spring 2022)
+# CMPT 756 - Distributed and Cloud Systems - Spring 2022
 
-You will find resources for your assignments and term project here.
+This repository is the project for CMPT 756 - Distributed and Cloud Systems. For this project we have used Amazon Web Services to cater to the compute requirements. 
 
 
-### 1. Instantiate the template files
+## Contributors
+
+- [Aditya Panchal](https://github.com/aadityapanchal)
+- [Divye Maheshwari](https://www.github.com/divyemaheshwari)
+- [Hemang Bhanushali](https://www.github.com/ihemangb07)
+- [Manav Patel](https://www.github.com/manav113)
+- [Priyanka Manam](https://www.github.com/priman15)
+
+
+## Demo
+
+- [Demo/YoutTube Link]()
+
+
+## Amazon Web Services(AWS) Setup
+Since the project is using AWS for its execution, you would require an AWS account to run it. 
+If you do not already have an AWS account click [here](aws.amazon.com)
+## System Architecutre
+
+| Service | Short name     | Description                |
+| :-------- | :------- | :------------------------- |
+| Users | S1 | List of users |
+| Music | S2 | Lists of songs and their artist |
+| Database | DB | Interface to key-value store |
+| Playlist | S3 | List of Playlists |
+
+## How to run the system
+
+- Prerequisites: 
+
+###  1. Clone the project
+
+```bash
+  git clone https://github.com/scp756-221/term-project-alpha 
+```
+
+###  2. Instantiate the template files
 
 #### Fill in the required values in the template variable file
 
 Copy the file `cluster/tpl-vars-blank.txt` to `cluster/tpl-vars.txt`
-and fill in all the required values in `tpl-vars.txt`.  These include
-things like your AWS keys, your GitHub signon, and other identifying
+and fill in all the required values in `tpl-vars.txt`. You will need values like your AWS keys, your GitHub signon, and other identifying
 information.  See the comments in that file for details. Note that you
-will need to have installed Gatling
-(https://gatling.io/open-source/start-testing/) first, because you
+will need to have installed [Gatling](https://gatling.io/open-source/start-testing/) first, because you
 will be entering its path in `tpl-vars.txt`.
-
-#### Instantiate the templates
-
-Once you have filled in all the details, run
-
-~~~
-$ make -f k8s-tpl.mak templates
-~~~
-
-This will check that all the programs you will need have been
-installed and are in the search path.  If any program is missing,
-install it before proceeding.
-
-The script will then generate makefiles personalized to the data that
-you entered in `clusters/tpl-vars.txt`.
-
-**Note:** This is the *only* time you will call `k8s-tpl.mak`
-directly. This creates all the non-templated files, such as
-`k8s.mak`.  You will use the non-templated makefiles in all the
-remaining steps.
-
-### 2. Ensure AWS DynamoDB is accessible/running
-
-Regardless of where your cluster will run, it uses AWS DynamoDB
-for its backend database. Check that you have the necessary tables
-installed by running
-
-~~~
-$ aws dynamodb list-tables
-~~~
-
-The resulting output should include tables `User` and `Music`.
-
-----
-
-
