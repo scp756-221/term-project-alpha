@@ -52,5 +52,5 @@ The resulting output should include tables `User` and `Music`.
 
 ----
 
-![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/poc-S3/System-diagram.png "Optional title")
+![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/poc-S3/System-diagram.png "System Architecture Diagram")
 
