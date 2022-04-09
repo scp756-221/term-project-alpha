@@ -41,6 +41,29 @@ object RMusic {
 
 }
 
+object CMusic {
+
+    val feeder = csv("music.csv").eager.random
+    val cmusic = forever("i") {
+    feed(feeder)
+    .exec(http("Create Music ${i}")
+      .post("/api/v1/music")
+      .header("content-type", "application/json")
+      .body(StringBody(string = """{
+        "Artist":"Ed Sheeran",
+        "SongTitle":"Shape of You"
+        }"""
+      )))
+    .exec(http("Read Music ${i}")
+      .get("/api/v1/music/${UUID}"))
+    .pause(1)
+    .exec(http("Delete Music ${i}")
+      .delete("/api/v1/music/${UUID}"))
+    .pause(1)
+  }
+
+}
+
 object RUser {
 
   val feeder = csv("users.csv").eager.circular
