@@ -30,7 +30,7 @@ class Playlist():
 
     def create_playlist(self, playlist_name, songIds):
         payload = {'Playlist Name': playlist_name,
-                   'Song IDs': songIds}
+                   'Music IDs': songIds}
         r = requests.post(
             self._url,
             json=payload,
@@ -43,7 +43,6 @@ class Playlist():
             self._url + playlist_id,
             headers={'Authorization': self._auth}
         )
-        print(r.json())
         return r.status_code, r.json()
 
     def delete_playlist(self, playlist_id):
@@ -54,8 +53,8 @@ class Playlist():
 
     def add_song_to_playlist(self, playlist_id, songs_to_add):
         payload = {'Playlist ID': playlist_id,
-                   'Songs IDs To Add': songs_to_add}
-        r = requests.post(
+                   'Music IDs To Add': songs_to_add}
+        r = requests.put(
             self._url + 'add/',
             json=payload,
             headers={'Authorization': self._auth}
@@ -64,8 +63,8 @@ class Playlist():
 
     def remove_song_from_playlist(self, playlist_id, songs_to_remove):
         payload = {'Playlist ID': playlist_id,
-                   'Songs IDs To Remove': songs_to_remove}
-        r = requests.post(
+                   'Music IDs To Remove': songs_to_remove}
+        r = requests.put(
             self._url + 'remove/',
             json=payload,
             headers={'Authorization': self._auth}
@@ -79,7 +78,7 @@ class Playlist():
         the api should result in an error with HTTP 400 error
         """
         payload = {'Playlist ID': playlist_id}
-        r = requests.post(
+        r = requests.put(
             self._url + 'remove/',
             json=payload,
             headers={'Authorization': self._auth}
