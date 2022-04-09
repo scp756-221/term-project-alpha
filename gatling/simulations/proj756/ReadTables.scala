@@ -54,6 +54,27 @@ object RUser {
 
 }
 
+object CUser {
+  
+  val feeder = csv("users.csv").eager.random
+
+  val cuser = forever("i"){
+    feed(feeder)
+    .exec(http("Create User ${i}")
+      .post("/api/v1/user")
+      .header("content-type", "application/json")
+      .body(StringBody(string = """{
+        "fname":"Priyanka",
+        "lname":"Manan",
+        "email":"priyankam@abc.com" 
+        }"""
+      )))
+    .exec(http("Read User ${i}")
+      .get("/api/v1/user/${UUID}"))
+    .pause(1)
+  }
+}  
+
 object RPlaylist {
 
   val feeder = csv("playlists.csv").eager.random
