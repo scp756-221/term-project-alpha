@@ -40,10 +40,10 @@ error_messages = {
     "create_payload_error": "Request body is not correct."
                             " Keys needed: Playlist Name, Music IDs.",
     "add_music_payload_error": "Request body is not correct."
-                              " Keys needed: Playlist ID, Music IDs To Add.",
+                               " Keys needed: Playlist ID, Music IDs To Add.",
     "remove_music_payload_error": "Request body is not"
-                                 " correct. Keys needed: Playlist ID,"
-                                 " Music IDs To Remove.",
+                                  " correct. Keys needed: Playlist ID,"
+                                  " Music IDs To Remove.",
     "no_or_multiple_playlist_records_error": "No / Multiple records found for "
                                              "the Playlist ID."
                                              " Please verify it is correct.",
@@ -55,9 +55,9 @@ error_messages = {
     "db_delete_error": "Exception while deleting the playlist."
                        " Please reach out to the developers.",
     "missing_music_record_error": "No record found in Music"
-                                 " table for the Music ID: {}",
+                                  " table for the Music ID: {}",
     "music_not_in_playlist_error": "Playlist does not have the Music ID: {}."
-                                  " Unable to process the request"
+                                   " Unable to process the request"
 }
 
 bp = Blueprint('app', __name__)
@@ -66,7 +66,7 @@ bp = Blueprint('app', __name__)
 @bp.route('/health')
 @metrics.do_not_track()
 def health():
-    return Response("API health check is completed.", status=200, mimetype="application/json")
+    return Response("", status=200, mimetype="application/json")
 
 
 @bp.route('/readiness')
@@ -78,7 +78,7 @@ def readiness():
 @bp.route('/', methods=['GET'])
 @metrics.do_not_track()
 def list_all():
-    return "API is working. Please access the required URL"
+    return "API is working. Please access the required URL."
 
 
 def get_music_details(music_id, headers):
@@ -106,8 +106,6 @@ def get_playlist_details(playlist_id):
         params=payload,
         headers={'Authorization': headers['Authorization']})
     response_json = response.json()
-    # TODO
-    # add handling if response isn't found
     return response_json
 
 
@@ -190,9 +188,11 @@ def add_music_to_playlist():
                 if music_api_response['Count'] == 1:
                     continue
                 else:
-                    return Response(json.dumps({
-                        "Message":
-                        error_messages['missing_music_record_error'].format(music)}),
+                    return Response(json.dumps(
+                        {
+                            "Message": error_messages
+                            ['missing_music_record_error'].format(music)
+                         }),
                         status=400, mimetype='application/json')
             response_items[0]['Music_IDs'].extend(new_music_to_add)
     except Exception:
@@ -207,13 +207,14 @@ def add_music_to_playlist():
     # logging.warn(response_items[0])
     try:
         _ = requests.put(url,
-            params=request_body,
-            json={
-                "Music_IDs": list(set(response_items[0]['Music_IDs']))
-            },
-            headers={
-                'Authorization': headers['Authorization']
-            })
+                         params=request_body,
+                         json={
+                             "Music_IDs":
+                                 list(set(response_items[0]['Music_IDs']))
+                         },
+                         headers={
+                             'Authorization': headers['Authorization']
+                         })
         updated_playlist_details = \
             get_playlist_details(playlist_id)['Items'][0]
         return Response(json.dumps({
@@ -250,9 +251,10 @@ def remove_music_from_playlist():
     try:
         playlist_details = get_playlist_details(playlist_id)
         if playlist_details['Count'] != 1:
-            return Response(json.dumps({
-                "Message":
-                    error_messages['no_or_multiple_playlist_records_error']}),
+            return Response(json.dumps(
+                {"Message":
+                    error_messages['no_or_multiple_playlist_records_error']
+                 }),
                 status=400, mimetype='application/json')
         else:
             response_items = playlist_details['Items']
@@ -300,7 +302,8 @@ def delete_playlist(playlist_id):
     url = db['name'] + '/' + db['endpoint'][2]
     try:
         _ = requests.delete(url, params={
-            "objtype": "playlist", "objkey": playlist_id},
+            "objtype": "playlist", "objkey": playlist_id
+        },
             headers={'Authorization': headers['Authorization']})
         return Response(json.dumps({
             "Message": success_messages['delete_playlist']}),
