@@ -91,27 +91,6 @@ object RPlaylist {
   }
 }
 
-object CPlaylist {
-  
-  val feeder = csv("playlists.csv").eager.random
-
-
-  val cplaylist = forever("i"){
-    feed(feeder)
-    .exec(http("Create Playlist ${i}")
-      .post("/api/v1/playlists")
-      .header("content-type", "application/json")
-      .body(StringBody(string = """{
-        "Playlist_Name":"Hemang's Bollywood Playlist",
-        "Music_IDs":["22e47f97-11ca-4c3c-8e77-f3068fddaf6e"]
-        }"""
-      )))
-    .pause(1)
-    .exec(http("RPlaylist ${i}")
-      .get("/api/v1/playlists/${Playlist_ID}"))
-    .pause(1)
-  }
-}
 
 /*
   After one S1 read, pause a random time between 1 and 60 s
