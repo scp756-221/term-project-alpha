@@ -72,8 +72,11 @@ object CUser {
     .exec(http("Read User ${i}")
       .get("/api/v1/user/${UUID}"))
     .pause(1)
+    .exec(http("Delete User ${i}")
+      .delete("/api/v1/user/${UUID}"))
+    .pause(1)
   }
-}  
+}
 
 object RPlaylist {
 
@@ -82,6 +85,28 @@ object RPlaylist {
 
   val rplaylist = forever("i"){
     feed(feeder)
+    .exec(http("RPlaylist ${i}")
+      .get("/api/v1/playlists/${Playlist_ID}"))
+    .pause(1)
+  }
+}
+
+object CPlaylist {
+  
+  val feeder = csv("playlists.csv").eager.random
+
+
+  val cplaylist = forever("i"){
+    feed(feeder)
+    .exec(http("Create Playlist ${i}")
+      .post("/api/v1/playlists")
+      .header("content-type", "application/json")
+      .body(StringBody(string = """{
+        "Playlist_Name":"Hemang's Bollywood Playlist",
+        "Music_IDs":["22e47f97-11ca-4c3c-8e77-f3068fddaf6e"]
+        }"""
+      )))
+    .pause(1)
     .exec(http("RPlaylist ${i}")
       .get("/api/v1/playlists/${Playlist_ID}"))
     .pause(1)
@@ -199,6 +224,18 @@ class ReadPlaylistSim extends ReadTablesSim {
     scnReadPlaylist.inject(atOnceUsers(Utility.envVarToInt("USERS", 1)))
   ).protocols(httpProtocol)
 }
+
+// Add Create and Delete load for User Service
+
+class CreateUserSim extends ReadTablesSim {
+  val scnCreateUser = scenario("CreateUser and DeleteUser")
+    .exec(CUser.cuser)
+
+  setUp(
+    scnCreateUser.inject(atOnceUsers(Utility.envVarToInt("USERS", 1)))
+  ).protocols(httpProtocol)
+}
+
 
 /*
   Read all services concurrently at varying rates.
