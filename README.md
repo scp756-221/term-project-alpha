@@ -22,7 +22,7 @@ This repository is the project for CMPT 756 - Distributed and Cloud Systems. For
 Since the project is using AWS for its execution, you would require an AWS account to run it. 
 If you do not already have an AWS account click [here](aws.amazon.com)
 ## System Architecutre
-
+![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/poc-S3/System-diagram.png "System Architecture Diagram")
 | Service | Short name     | Description                |
 | :-------- | :------- | :------------------------- |
 | Users | S1 | List of users |
