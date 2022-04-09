@@ -227,7 +227,7 @@ class ReadPlaylistSim extends ReadTablesSim {
   ).protocols(httpProtocol)
 }
 
-// Add Create and Delete load for User Service
+// Add Create and Delete load for User Service, Music Service
 
 class CreateUserSim extends ReadTablesSim {
   val scnCreateUser = scenario("CreateUser and DeleteUser")
@@ -238,7 +238,14 @@ class CreateUserSim extends ReadTablesSim {
   ).protocols(httpProtocol)
 }
 
+class CreateMusicSim extends ReadTablesSim {
+  val scnCreateMusic = scenario("CreateMusic and DeleteMusic")
+    .exec(CMusic.cmusic)
 
+  setUp(
+    scnCreateMusic.inject(atOnceUsers(Utility.envVarToInt("USERS", 1)))
+  ).protocols(httpProtocol)
+}
 /*
   Read all services concurrently at varying rates.
   Ramp up new users one / 10 s until requested USERS
