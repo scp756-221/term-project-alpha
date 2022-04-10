@@ -38,7 +38,7 @@ If you do not already have an AWS account click [here](aws.amazon.com)
 | tools | 'Tools' container to develop new services locally |
 
 ## System Architecutre
-![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/poc-S3/System-diagram.png "System Architecture Diagram")
+![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/s3-playlist/System-diagram.png "System Architecture Diagram")
 
 | Service | Short name     | Description                |
 | :-------- | :------- | :------------------------- |
@@ -49,7 +49,6 @@ If you do not already have an AWS account click [here](aws.amazon.com)
 
 ## How to run the system
 
-- Prerequisites: 
 
 ###  1. Clone the project
 
