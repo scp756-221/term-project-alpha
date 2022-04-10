@@ -15,24 +15,40 @@ This repository is the project for CMPT 756 - Distributed and Cloud Systems. For
 
 ## Demo
 
-- [Demo/YoutTube Link]()
+- [Demo]()
 
 
 ## Amazon Web Services(AWS) Setup
 Since the project is using AWS for its execution, you would require an AWS account to run it. 
 If you do not already have an AWS account click [here](aws.amazon.com)
+
+## Code Structure
+
+| Folder Name | Description |
+| :-------- | :------------------------- |
+| ci | Continuous Integration related files |
+| cluster | EKS cluster configuration related files |
+| db | Database service for accessing AWS DynamoDB |
+| gatling | Files to generate synthetic load for services |
+| loader | Load DynamoDB with fixtures for the three services |
+| logs | Logs files are saved here to reduce clutter |
+| s1 | Users Service |
+| s2 | Music service |
+| s3 | Playlist service |
+| tools | 'Tools' container to develop new services locally |
+
 ## System Architecutre
-![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/poc-S3/System-diagram.png "System Architecture Diagram")
+![System Diagram](https://github.com/scp756-221/term-project-alpha/blob/s3-playlist/System-diagram.png "System Architecture Diagram")
+
 | Service | Short name     | Description                |
 | :-------- | :------- | :------------------------- |
-| Users | S1 | List of users |
-| Music | S2 | Lists of songs and their artist |
-| Database | DB | Interface to key-value store |
-| Playlist | S3 | List of Playlists |
+| Users | s1 | List of users |
+| Music | s2 | Lists of songs and their artist |
+| Database | db | Interface to key-value store |
+| Playlist | s3 | List of Playlists |
 
 ## How to run the system
 
-- Prerequisites: 
 
 ###  1. Clone the project
 
@@ -159,6 +175,11 @@ To run this, we first need to start the gateway, database, users, music and play
 ~~~
 This step builds and pushes another image `cmpt756loader` to GitHub Container Registry. Set the access for this new image to public as done before. 
 
+## Acknowledgements
+
+ - A major part of the code base has been taken from [c756-exer](https://github.com/scp756-221/c756-exer) repository. This repository is developed and maintained by the teaching team of CMPT 756 at Simon Fraser University. We highly appreciate their efforts and constant improvement to the code.
+
+
 ## Appendix
 
 ### Additional targets to manage AWS cluster:
@@ -206,4 +227,19 @@ To recreate the node-group of your cloud cluster:
 ~~~
 /home/k8s# kubectl logs --selector app=cmpt756s2 --container cmpt756s2 --tail=-1
 The --selector parameter specifies the pod name and the --container parameter specifies the container name (both of which are cmpt756s2), while --tail=-1 requests that the entire log be returned, no matter how long.
+~~~
+
+
+###  List the tables in DynamoDB has necessary tables installed
+~~~
+$ aws dynamodb list-tables
+~~~
+
+### To create/delete these tables by way of AWS’ CloudFormation (AWS’ IaC technology):
+
+~~~
+# create a stack that encapsulate the 2 tables
+$ aws cloudformation create-stack --stack-name <SomeStackName> --template-body file://path/to/cluster/cloudformationdynamodb.json 
+# delete the stack
+$ aws cloudformation delete-stack --stack-name <SomeStackName>
 ~~~
