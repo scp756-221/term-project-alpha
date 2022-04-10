@@ -24,6 +24,7 @@ LOG_DIR=logs
 APP_NS=c756ns
 ISTIO_NS=istio-system
 KIALI_OP_NS=kiali-operator
+KIALI_VER=1.45.0
 
 RELEASE=c756
 
@@ -52,10 +53,10 @@ uninstall-prom:
 	$(HELM) uninstall $(RELEASE) --namespace $(ISTIO_NS) | tee -a $(LOG_DIR)/obs-uninstall-prometheus.log
 
 install-kiali:
-	echo $(HELM) install --namespace $(ISTIO_NS) --set auth.strategy="anonymous" --repo https://kiali.org/helm-charts kiali-server kiali-server > $(LOG_DIR)/obs-kiali.log
+	echo $(HELM) install --namespace $(ISTIO_NS) --set auth.strategy="anonymous" --repo https://kiali.org/helm-charts --version $(KIALI_VER) kiali-server kiali-server > $(LOG_DIR)/obs-kiali.log
 	# This will fail every time after the first---the "|| true" suffix keeps Make running despite error
 	$(KC) create namespace $(KIALI_OP_NS) || true  | tee -a $(LOG_DIR)/obs-kiali.log
-	$(HELM) install --set cr.create=true --set cr.namespace=$(ISTIO_NS) --namespace $(KIALI_OP_NS) --repo https://kiali.org/helm-charts kiali-operator kiali-operator | tee -a $(LOG_DIR)/obs-kiali.log
+	$(HELM) install --set cr.create=true --set cr.namespace=$(ISTIO_NS) --namespace $(KIALI_OP_NS) --repo https://kiali.org/helm-charts --version $(KIALI_VER) kiali-operator kiali-operator | tee -a $(LOG_DIR)/obs-kiali.log
 	$(KC) apply -n $(ISTIO_NS) -f kiali-cr.yaml | tee -a $(LOG_DIR)/obs-kiali.log
 
 update-kiali:
