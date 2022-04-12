@@ -13,11 +13,6 @@ This repository is the project for CMPT 756 - Distributed and Cloud Systems. For
 - [Priyanka Manam](https://www.github.com/priman15)
 
 
-## Demo
-
-- [Demo]()
-
-
 ## Amazon Web Services(AWS) Setup
 Since the project is using AWS for its execution, you would require an AWS account to run it. 
 If you do not already have an AWS account click [here](aws.amazon.com)
@@ -306,7 +301,7 @@ The --selector parameter specifies the pod name and the --container parameter sp
 ~~~
 
 
-###  List the tables in DynamoDB has necessary tables installed
+###  List the tables in DynamoDB
 ~~~
 $ aws dynamodb list-tables
 ~~~
