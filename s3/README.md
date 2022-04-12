@@ -1,12 +1,10 @@
 # CMPT 756 Playlist service
 
-Playlist service
+Playlist service to store list of playlists. The microservice allows the following functionlities:
+- Create playlist
+- Add song
+- Remove song
+- View playlist details
+- Delete playlist
 
-This is a public Flask server written in Python.
-
-v1: A version that relies upon the DB service to store its
-  values persistently. 
-
-test: A special test frontend.  Used in the continuous
-  integration tests for early assignments. May also be used for local unit
-  testing.
+The microservice interacts with the Music(s2) serivce and uses db service to persist the data in the AWS DynamoDB.
