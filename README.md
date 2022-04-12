@@ -175,10 +175,86 @@ To run this, we first need to start the gateway, database, users, music and play
 ~~~
 This step builds and pushes another image `cmpt756loader` to GitHub Container Registry. Set the access for this new image to public as done before. 
 
+### Create a new namespace
+Kubernetes uses a namespace to organize applications. Begin by creating a namespace c756ns and setting it as the default:
+~~~
+/home/k8s# kubectl create ns c756ns
+/home/k8s# kubectl config set-context --current --namespace=c756ns
+~~~
+
+`Provisioning` : Installing the course's sample application and the components required. It can be done by running 
+~~~
+/home/k8s# make -f k8s.mak provision
+~~~
+
+
+### To get the link to the Grafana Dashbaord 
+~~~
+/home/k8s# make -f k8s.mak grafana-url. 
+~~~
+
+### To login into the dashboard, use the following credentials
+- User: `admin`
+- Password: `prom-operator`
+
+### Open the `c756 transactions` dashboard
+After signon, you will see the Grafana home screen. Navigate to our dashboard by hovering on the “Dashboards”(four squares) icon on the left. Select “Browse” from the menu. This will bring up a list of dashboards. Click on `c756 transactions`.
+
+
+### Send load to the application from Gatling
+Run the following commands with 30 as NUM-USERS. This will generate a load for the relevant microservice 
+~~~
+/home/k8s# tools/gatling-n-music.sh <NUM-USERS>
+/home/k8s# tools/gatling-n-user.sh <NUM-USERS>
+/home/k8s# tools/gatling-n-playlist.sh <NUM-USERS>
+~~~
+
+### Manually scale the system
+Add more pods to a service. Put the required count of pods in the `replica-count`.
+Example: /home/k8s# kubectl scale deployment/cmpt756s3-v1 --replicas 5
+~~~
+/home/k8s# kubectl scale deployment/cmpt756s3-v1 --replicas <replica-count>
+~~~
+
+
+Add more worker node. Put the required worker node count in the `node-count`
+Example: eksctl scale nodegroup --name=worker-nodes --cluster aws756 --nodes 5
+~~~
+/home/k8s# eksctl scale nodegroup --name=worker-nodes --cluster aws756 --nodes <node-count>
+~~~
+
+### Autoscale the system
+
+We will deploy the metrics server using [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server).
+~~~
+/home/k8s# kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
+~~~
+Set threshold for required metrics above which the pods will autoscale
+Example: /home/k8s# kubectl set resources deployment cmpt756s3-v1 -c=cmpt756s3-v1 --limits=cpu=80m,memory=64Mi
+~~~
+kubectl set resources deployment <service-name> -c=<service-name> --limits=cpu=80m,memory=64Mi
+~~~
+
+Setting minimum and maximum number of pods to be autoscaled. 
+Example: /home/k8s# `kubectl autoscale deployment cmpt756s3-v1 --min=2 --max=100`
+~~~
+/home/k8s# kubectl autoscale deployment <service-name> --min=2 --max=100
+~~~
+
+### Kill the Gatling load
+~~~
+./tools/kill-gatling.sh
+~~~
+
+### Stop the EKS cluster
+~~~
+make -f eks.mak stop
+~~~
+
 ## Acknowledgements
 
  - A major part of the code base has been taken from [c756-exer](https://github.com/scp756-221/c756-exer) repository. This repository is developed and maintained by the teaching team of CMPT 756 at Simon Fraser University. We highly appreciate their efforts and constant improvement to the code.
-
+ 
 
 ## Appendix
 
@@ -236,10 +312,19 @@ $ aws dynamodb list-tables
 ~~~
 
 ### To create/delete these tables by way of AWS’ CloudFormation (AWS’ IaC technology):
-
 ~~~
 # create a stack that encapsulate the 2 tables
 $ aws cloudformation create-stack --stack-name <SomeStackName> --template-body file://path/to/cluster/cloudformationdynamodb.json 
 # delete the stack
 $ aws cloudformation delete-stack --stack-name <SomeStackName>
+~~~
+
+### Check if the replicas were allotted to a service
+~~~
+kubectl describe deploy/<service-name>
+~~~
+
+### Check the number of worker-nodes running currently
+~~~
+kubectl get nodes
 ~~~
